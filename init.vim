@@ -14,8 +14,6 @@ call plug#begin('C:/Users/Kartha/AppData/Local/nvim/plugged')
 " --------------------------------
 "
 "
-
-
 Plug 'scrooloose/nerdtree' 
 " by Marty Grenfell
 " A tree explorer plugin for vim
@@ -81,6 +79,10 @@ Plug 'fatih/vim-go', {'do': 'GoUpdateBinaries'}
 
 Plug 'junegunn/vim-easy-align' " Simple easy-to-use Vim alignment plugin
 
+Plug 'jceb/vim-orgmode'
+" by Stefan Otte and Aleksandar Dimitrov
+" Text outlining and task management for Vim based on Emacs Org-mode
+
 
 "---------------------------------
 "  Language 
@@ -130,11 +132,20 @@ Plug 'ayu-theme/ayu-vim'
 " by Ayu theme
 " Modern theme for modern Vims
 "
-Plug 'reedes/vim-color-pencil'
+Plug 'reedes/vim-colors-pencil'
 " by Reed Esau
 " Light (&dark) color scheme inspired by IA Writer
 "
+" Plug 'reedes/vim-thematic'
+" Conveniently manage Vim's appearance to suit your task  and enviornment.
+"
 
+Plug 'NLKNguyen/papercolor-theme'
+" by Nikyle Nguyen
+" Light and dark color themes. Light one supposed to be great for
+" presentations.
+Plug 'dracula/vim', { 'as': 'dracula' } 
+"
 "
 "---------------------------------------
 "   Writing 
@@ -147,8 +158,33 @@ Plug 'reedes/vim-pencil'
 " by Reed Esau
 " Rethinking Vim as a tool for writing
 "
+Plug 'reedes/vim-lexical'
+" by Reed Esau
+" Building on Vim's spell-check and thesaurus/dictionary completion
+"
+Plug 'kana/vim-textobj-user'
+" by Kana Natsuno
+" Need by textobj plugin which follows.
+Plug 'reedes/vim-textobj-sentence'
+" by Reed Esau
+" Improving on Vim's native sentence text object and motion.
+Plug 'reedes/vim-wordy' 
+" by Reed Esau
+" Uncover usage problems in your writing
+Plug 'reedes/vim-textobj-quote'
+" by Reed Esau
+" Extending Vim to better support  typographic ('curly') quote characters
+Plug 'dbmrq/vim-ditto'
+"
+Plug 'reedes/vim-litecorrect'
+" by Reed Esau
+" Lightweight autocorrection for Vim
+"
+"
 call plug#end()
 
+set nocompatible
+filetype plugin indent on
 
 " Neovim/Vim settings
 set termguicolors
@@ -289,3 +325,80 @@ nmap <silent> gr <Plug>(coc-references)
 " ----------------------------------------------
 "
 let g:airline#extension#tabline#enabled = 1
+
+
+""""""""Prose related function for VIM-Pencil and related plugins
+"""""""
+"""""""
+function! Prose()
+  call pencil#init()
+  call lexical#init()
+  call litecorrect#init()
+  call textobj#quote#init()
+  call textobj#sentence#init()
+
+  " manual reformatting shortcuts
+  nnoremap <buffer> <silent> Q gqap
+  xnoremap <buffer> <silent> Q gq
+  nnoremap <buffer> <silent> <leader>Q vapJgqap
+
+  " force top correction on most recent misspelling
+  nnoremap <buffer> <c-s> [s1z=<c-o>
+  inoremap <buffer> <c-s> <c-g>u<Esc>[s1z=`]A<c-g>u
+
+  " replace common punctuation
+  iabbrev <buffer> -- –
+  iabbrev <buffer> --- —
+  iabbrev <buffer> << «
+  iabbrev <buffer> >> »
+
+  " open most folds
+  setlocal foldlevel=6
+
+  " replace typographical quotes (reedes/vim-textobj-quote)
+  map <silent> <buffer> <leader>qc <Plug>ReplaceWithCurly
+  map <silent> <buffer> <leader>qs <Plug>ReplaceWithStraight
+
+  " highlight words (reedes/vim-wordy)
+  noremap <silent> <buffer> <F8> :<C-u>NextWordy<cr>
+  xnoremap <silent> <buffer> <F8> :<C-u>NextWordy<cr>
+  inoremap <silent> <buffer> <F8> <C-o>:NextWordy<cr>
+
+endfunction
+
+" automatically initialize buffer by file type
+autocmd FileType markdown,mkd,text,textile call Prose()
+
+" invoke manually by command for other file types
+command! -nargs=0 Prose call Prose()
+
+augroup textobj_sentence
+  autocmd!
+  autocmd FileType markdown call textobj#sentence#init()
+  autocmd FileType textile call textobj#sentence#init()
+augroup END
+"
+"
+"
+" """"" For Ditto  """""
+" Use autocmds to check your text automatically and keep the highlighting
+" up to date (easier):
+au FileType markdown,text,tex DittoOn  " Turn on Ditto's autocmds
+nmap <leader>di <Plug>ToggleDitto      " Turn Ditto on and off
+
+" If you don't want the autocmds, you can also use an operator to check
+" specific parts of your text:
+" vmap <leader>d <Plug>Ditto	       " Call Ditto on visual selection
+" nmap <leader>d <Plug>Ditto	       " Call Ditto on operator movement
+
+nmap =d <Plug>DittoNext                " Jump to the next word
+nmap -d <Plug>DittoPrev                " Jump to the previous word
+nmap +d <Plug>DittoGood                " Ignore the word under the cursor
+nmap _d <Plug>DittoBad                 " Stop ignoring the word under the cursor
+nmap ]d <Plug>DittoMore                " Show the next matches
+nmap [d <Plug>DittoLess                " Show the previous matches
+"""""""""""End of Ditto config """""""""""""
+"
+"
+"
+""""""""""End of Prose and calling of Prose()""""""""""
