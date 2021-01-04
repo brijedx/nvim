@@ -1,4 +1,4 @@
-"adding Paths
+gadding Paths
 " --- Python 3
 "End paths
 
@@ -224,7 +224,7 @@ let mapleader = "\\"
 
 " Goyo + limelight (focus mode)
 let g:limelight_conceal_ctermfg = 240
-let g:goyo_width = 60
+let g:goyo_width = 75
 let g:limelight_default_coefficient = 0.7
 " let g:limelight_paragraph_span = 1
 
